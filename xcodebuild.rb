@@ -42,6 +42,12 @@ module XCBuild
       return sha1.to_s.upcase
     end
     
+    def install_provisioning_profile(provisioning_profile)
+      puts `cp -f "#{provisioning_profile}" ~/Library/MobileDevice/Provisioning\\ Profiles/`
+      puts "Provisioning Profile Install Return: ", $?
+      raise "Error installing provisioning profile #{provisioning_profile} in #{`echo ~/Library/MobileDevice/Provisioning\ Profiles/`} Return Code: #{$?}" if ($? != 0)
+    end
+    
     def clean_xcode_project(xcode_project)
       puts `xcodebuild -project "#{xcode_project}" -alltargets clean`
       puts "Xcode Clean Return: ", $?
@@ -111,6 +117,7 @@ module XCBuild
       puts "Build Path: ", buildPath
       
       ### Install Signing Certs and Provisioning Profiles ###
+      install_provisioning_profile(provisioningProfile)
       create_keychain(keychain)
       unlock_keychain(keychain)
       set_default_keychain(keychain)
