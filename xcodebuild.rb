@@ -43,7 +43,16 @@ module XCBuild
     end
     
     def install_provisioning_profile(provisioning_profile)
-      puts `cp -f "#{provisioning_profile}" ~/Library/MobileDevice/Provisioning\\ Profiles/`
+      dest_path = File.join(File.expand_path("~/Library/MobileDevice/Provisioning Profiles"), File.basename(provisioning_profile))
+      
+      puts "Comparing Source:#{provisioning_profile} to Dest: #{dest_path} Compare:#{File.identical?(provisioning_profile, dest_path)}"
+      
+      if File.identical?(provisioning_profile, dest_path)
+        puts "Provisioning Profiles are the same. Skipping install."
+        return
+      end
+      
+      puts `cp -f "#{provisioning_profile}" #{dest_path}`
       puts "Provisioning Profile Install Return: ", $?
       raise "Error installing provisioning profile #{provisioning_profile} in #{`echo ~/Library/MobileDevice/Provisioning\ Profiles/`} Return Code: #{$?}" if ($? != 0)
     end
