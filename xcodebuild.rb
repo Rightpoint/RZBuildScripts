@@ -63,8 +63,13 @@ module XCBuild
       raise "Error cleaning Xcode Project #{xcode_project} Return Code: #{$?}" if ($? != 0)
     end
     
-    def build_xcode_configuration(xcode_project, configuration)
-      puts `xcodebuild -project "#{xcode_project}" -configuration "#{configuration}"`
+    def build_xcode_configuration(xcode_project, configuration, target=nil)
+      if (nil == target)
+        puts `xcodebuild -project "#{xcode_project}" -configuration "#{configuration}"`
+      else
+        puts `xcodebuild -project "#{xcode_project}" -target "#{target}" -configuration "#{configuration}"`
+      end
+      
       puts "Xcode Build Return: ", $?
       raise "Error building configuration #{configuration} in Xcode Project #{xcode_project} Return Code: #{$?}" if ($? != 0)
     end
@@ -83,19 +88,19 @@ module XCBuild
     
     def package_xcode_build_configuration(configuration, target_name, build_path, project_name, signing_ident, provisioning_profile)
       config_build_path = File.join(build_path, configuration + "-iphoneos")
-      package_name = project_name + "-" + configuration
+      package_name = target_name + "-" + configuration
       
       # Clean any previous package files
       clean_package_files(config_build_path, package_name)
       
-      target_build_path = File.join(config_build_path, target_name)
+      target_build_path = File.join(config_build_path, "#{target_name}.app")
       output_path = File.join(config_build_path, package_name + ".ipa")
       
       puts `xcrun -sdk iphoneos PackageApplication -v "#{target_build_path}" -o "#{output_path}" --sign #{signing_ident} --embed "#{provisioning_profile}"`
       puts "Xcrun Package Application Return: ", $?
       raise "Error packaging application #{target_build_path} with signing certificate #{signing_ident} provisioning profile #{provisioning_profile} output file #{output_path} Return Code: #{$?}" if ($? != 0)
       
-      target_dsym_path = File.join(config_build_path, target_name + ".dsym")
+      target_dsym_path = target_build_path + ".dsym"
       dsym_zip_file = target_dsym_path + ".zip"
       
       puts `zip "#{dsym_zip_file}" -r "#{target_dsym_path}"`
@@ -104,15 +109,16 @@ module XCBuild
       [output_path, dsym_zip_file]
     end
 
-    def build_and_package_configuration(projectFile, configuration, signingCert, mobileProvision, output_dir=".", certPassword="", keychain="jenkins.keychain", keychainPassword=nil)
+    def build_and_package_configuration(projectFile, configuration, signingCert, mobileProvision, output_dir=".", certPassword="", keychain="jenkins.keychain", keychainPassword=nil, target_name=nil)
       
       ## Build Variables ###
       projectFilePath = File.realpath(projectFile)
       projectPath = File.dirname(projectFilePath)
       projectName = File.basename(projectFilePath, ".xcodeproj")
       
-      xcodeTargetName = projectName + ".app"
-      dsymName = xcodeTargetName + ".dSYM"
+      target_name = projectName if nil == target_name
+      
+      dsymName = target_name + ".app.dSYM"
       buildPath=File.join(projectPath, 'build')
       
       provisioningProfile = File.realpath(mobileProvision[0])
@@ -121,7 +127,7 @@ module XCBuild
       puts "Project Name: ", projectName
       puts "Build Path: ", buildPath
       
-      puts "Xcode Target Name: ", xcodeTargetName
+      puts "Xcode Target Name: ", target_name
       puts "DSYM Name: ", dsymName
       puts "Build Path: ", buildPath
       
@@ -138,10 +144,10 @@ module XCBuild
       clean_xcode_project(projectFilePath)
       
       ### Build Xcode Configuration ###
-      build_xcode_configuration(projectFilePath, configuration)
+      build_xcode_configuration(projectFilePath, configuration, target_name)
       
       ### Package Application ###
-      products = package_xcode_build_configuration(configuration, xcodeTargetName, buildPath, projectName, signingIdentity, provisioningProfile)
+      products = package_xcode_build_configuration(configuration, target_name, buildPath, projectName, signingIdentity, provisioningProfile)
       
       puts "Products: #{products} OutputDir: #{output_dir}"
       
@@ -154,11 +160,12 @@ end
 
 
 class CLI < Clive
+  opt :t, :target, arg: '<target_name>'
   opt :p, :profiles, arg: '<profile>...'
   opt :cert_password, arg: '<cert_password>'
   opt :o, :output_dir, arg: '<output_dir>'
   opt :k, :keychain, arg: '<keychain>'
-  opt :keychain_password, arg: '<keychain-password'
+  opt :keychain_password, arg: '<keychain-password>'
 end
 
 result = CLI.run
@@ -166,7 +173,7 @@ result = CLI.run
 builder = XCBuild::Builder.new()
 
 begin
-  builder.build_and_package_configuration(result.args[0], result.args[1], result.args[2], result[:profiles], result[:output_dir], result[:cert_password], result[:keychain], result[:keychain_password])
+  builder.build_and_package_configuration(result.args[0], result.args[1], result.args[2], result[:profiles], result[:output_dir], result[:cert_password], result[:keychain], result[:keychain_password], result[:target])
 rescue Exception
   puts "BUILD FAILED: #{$!}"
   return -1
