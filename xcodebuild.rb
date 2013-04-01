@@ -52,7 +52,7 @@ module XCBuild
         return
       end
       
-      puts `cp -f "#{provisioning_profile}" #{dest_path}`
+      puts `cp -f "#{provisioning_profile}" "#{dest_path}"`
       puts "Provisioning Profile Install Return: ", $?
       raise "Error installing provisioning profile #{provisioning_profile} in #{`echo ~/Library/MobileDevice/Provisioning\ Profiles/`} Return Code: #{$?}" if ($? != 0)
     end
