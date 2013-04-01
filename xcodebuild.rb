@@ -127,8 +127,8 @@ module XCBuild
       
       ### Install Signing Certs and Provisioning Profiles ###
       install_provisioning_profile(provisioningProfile)
-      create_keychain(keychain)
-      unlock_keychain(keychain)
+      create_keychain(keychain, keychainPassword)
+      unlock_keychain(keychain, keychainPassword)
       set_default_keychain(keychain)
       install_signing(signingCert, keychain)
       
