@@ -148,7 +148,7 @@ module XCBuild
       clean_xcode_project(projectFilePath)
       
       ### Build Xcode Configuration ###
-      build_xcode_configuration(projectFilePath, configuration, target_name, signingIdentity)
+      build_xcode_configuration(projectFilePath, configuration, target_name)
       
       ### Package Application ###
       products = package_xcode_build_configuration(configuration, target_name, buildPath, projectName, signingIdentity, provisioningProfile)
