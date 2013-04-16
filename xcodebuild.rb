@@ -67,11 +67,11 @@ module XCBuild
       if (nil == target && nil == signing_ident)
         puts `xcodebuild -project "#{xcode_project}" -configuration "#{configuration}"`
       elsif (nil == target)
-        puts `xcodebuild -project "#{xcode_project}" -configuration "#{configuration} CODE_SIGN_IDENTITY=#{signing_ident}"`
+        puts `xcodebuild -project "#{xcode_project}" -configuration "#{configuration}" CODE_SIGN_IDENTITY="#{signing_ident}"`
       elsif (nil == signing_ident)
         puts `xcodebuild -project "#{xcode_project}" -target "#{target}" -configuration "#{configuration}"`
       else
-        puts `xcodebuild -project "#{xcode_project}" -target "#{target}" -configuration "#{configuration} CODE_SIGN_IDENTITY=#{signing_ident}"`
+        puts `xcodebuild -project "#{xcode_project}" -target "#{target}" -configuration "#{configuration}" CODE_SIGN_IDENTITY="#{signing_ident}"`
       end
       
       puts "Xcode Build Return: ", $?
