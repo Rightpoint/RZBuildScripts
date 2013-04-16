@@ -63,15 +63,19 @@ module XCBuild
       raise "Error cleaning Xcode Project #{xcode_project} Return Code: #{$?}" if ($? != 0)
     end
     
-    def build_xcode_configuration(xcode_project, configuration, target=nil)
-      if (nil == target)
+    def build_xcode_configuration(xcode_project, configuration, target=nil, signing_ident=nil)
+      if (nil == target && nil == signing_ident)
         puts `xcodebuild -project "#{xcode_project}" -configuration "#{configuration}"`
-      else
+      elsif (nil == target)
+        puts `xcodebuild -project "#{xcode_project}" -configuration "#{configuration} CODE_SIGN_IDENTITY=#{signing_ident}"`
+      elsif (nil == signing_ident)
         puts `xcodebuild -project "#{xcode_project}" -target "#{target}" -configuration "#{configuration}"`
+      else
+        puts `xcodebuild -project "#{xcode_project}" -target "#{target}" -configuration "#{configuration} CODE_SIGN_IDENTITY=#{signing_ident}"`
       end
       
       puts "Xcode Build Return: ", $?
-      raise "Error building configuration #{configuration} in Xcode Project #{xcode_project} Return Code: #{$?}" if ($? != 0)
+      raise "Error building configuration #{configuration} for target #{target} in Xcode Project #{xcode_project} with signing identity #{signing_ident} Return Code: #{$?}" if ($? != 0)
     end
     
     def clean_package_files(build_path, package_name)
@@ -144,7 +148,7 @@ module XCBuild
       clean_xcode_project(projectFilePath)
       
       ### Build Xcode Configuration ###
-      build_xcode_configuration(projectFilePath, configuration, target_name)
+      build_xcode_configuration(projectFilePath, configuration, target_name, signingIdentity)
       
       ### Package Application ###
       products = package_xcode_build_configuration(configuration, target_name, buildPath, projectName, signingIdentity, provisioningProfile)
