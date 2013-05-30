@@ -33,6 +33,8 @@ class CLI < Clive
 	opt :rt, :releast_track, arg: '<release_track>'
 end
 
+result = CLI.run
+
 uploader = ABUpload::Uploader.new()
 
 begin
