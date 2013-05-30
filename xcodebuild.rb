@@ -30,13 +30,14 @@ module XCBuild
     end
     
     def install_signing(signing_cert, keychain="login", password="")
+      puts "security import \"#{signing_cert}\" -k \"#{keychain}\" -P \"#{password}\" -T /usr/bin/codesign"
       puts `security import "#{signing_cert}" -k "#{keychain}" -P "#{password}" -T /usr/bin/codesign`
       puts "Signing Return: ", $?
       raise "Error installing signing certificate #{signing_cert} in keychain #{keychain} Return Code: #{$?}" if ($? != 0)
     end
     
-    def get_cert_sha1(cert_file)
-      der_cert = OpenSSL::PKCS12.new(File.read(cert_file)).certificate.to_der
+    def get_cert_sha1(cert_file, cert_password)
+      der_cert = OpenSSL::PKCS12.new(File.read(cert_file), cert_password).certificate.to_der
       sha1 = OpenSSL::Digest::SHA1.new der_cert
       puts "Cert SHA-1:", sha1.to_s.upcase
       return sha1.to_s.upcase
@@ -140,9 +141,9 @@ module XCBuild
       create_keychain(keychain, keychainPassword)
       unlock_keychain(keychain, keychainPassword)
       set_default_keychain(keychain)
-      install_signing(signingCert, keychain)
+      install_signing(signingCert, keychain, certPassword)
       
-      signingIdentity = get_cert_sha1(signingCert)
+      signingIdentity = get_cert_sha1(signingCert, certPassword)
       
       ### Clean Xcode Targets ###
       clean_xcode_project(projectFilePath)
