@@ -115,7 +115,7 @@ resigner = ResignBuild::Resigner.new()
 begin
 	
     puts "Begining the Resign Process"
-    resigner.resign_build(result.args[0], result.args[1], result.args[2], result.args[3], result.args[4], provisioning_profile, cert_path, cert_password)
+    resigner.resign_build(result.args[0], result.args[1], result.args[2], result.args[3], result.args[4], result[:provisioning_profile], result[:cert_path], result[:cert_password])
 rescue Exception
 	puts "RESIGN FAILED: #{$!}"
 	return -1
