@@ -15,24 +15,29 @@ module ResignBuild
 			return code_signature
 		end
 
-		def unzip_ipa(ipa_path) 
+		def unzip_ipa(ipa_path)
+            puts "Unizipping the IPA: ",ipa_path
             puts `unzip "#{full_ipa_path}"`
             raise "Error Unzipping IPA: #{ipa_path} Make sure the file exists.  Return Code: #{$?}" if ($? != 0)
 		end
 
 		def remove_old_code_signature(output_path, xcode_target)
+            puts "Removing old Code Signature: ",output_path
 			code_signature = path_in_payload(output_path,xcode_target,"_codeSignature") 
 			code_resource = path_in_payload(output_path,xcode_target,"CodeResources")
             puts `rm -r "#{code_signature}" "#{code_resource}" 2> /dev/null | true`
 		end
 
 		def add_new_provisioning_profile(output_path, provisioning_profile, target_name)
+            puts "Adding new provisioning Profile: ", provisioning_profile
 			provisioning_profile_path = path_in_payload(output_path,xcode_target,"embedded.mobileprovision")
 
 			puts `cp "#{provisioning_profile}" "#{provisioning_profile_path}"`
 		end
 
 		def add_new_cert(output_path, target_name, cert_file, cert_password)
+            puts "Adding new Cert"
+            
             cert_sha1 = getCert_sha1(cert_full_path, cert_password)
             resource_rules = path_in_payload(output_path, xcode_target, "ResourceRules.plist")
 
@@ -40,6 +45,7 @@ module ResignBuild
 		end
 
 		def zip_up_new_ipa(output_ipa_path)
+            puts "Zipping up the new IPA"
             puts `zip -qr "#{output_ipa_path}" Payload`
 		end
 
@@ -61,19 +67,30 @@ module ResignBuild
             puts "Output IPA Name: ", output_ipa_name
             
 			output_path = File.realpath(build_path)
+            puts "OutputPath: ",output_path
+            
 			signing_path = File.realpath(signing_path)
+            puts "SigningPath: ",signing_path
+            
 			full_ipa_path = File.join(output_path, ipa_path)
+            puts "Full IPA Path: ",full_ipa_path
+            
 			output_ipa_path = File.join(output_path, output_ipa_name)
+            puts "Output IPA Path: ",output_ipa_path
+            
             cert_full_path = File.join(signing_path, cert_path)
+            puts "Cert Full Path: ", cert_full_path
+            
             provisioning_profile_path = File.join(signing_path, provisioning_profile)
-
+            puts "Provis Profile Path: ",provisioning_profile_path
+            
             unzip_ipa(full_ipa_path)
 
             remove_old_code_signature(output_path, xcode_target)
 
-			add_new_provisioning_profile(output_path, provisioning_profile_path, target_name)
+			add_new_provisioning_profile(output_path, provisioning_profile, target_name)
 
-			add_new_cert(output_path, target_name, cert_full_path, cert_password)
+			add_new_cert(output_path, target_name, cert_path, cert_password)
 
 			zip_up_new_ipa(output_ipa_path)
 
@@ -103,9 +120,7 @@ end
 # BuildPath, CIToken, ipa_path, 
 
 class CLI < Clive
-	opt :pro, :provisioning_profile, arg: '<provisioning_profile>'
-	opt :path, :cert_path, arg: '<cert_path>'
-	opt :pass, :cert_password, arg: '<cert_password>'
+	opt :p, :cert_password, arg: '<cert_password>'
 end
 
 result = CLI.run
@@ -115,7 +130,7 @@ resigner = ResignBuild::Resigner.new()
 begin
 	
     puts "Begining the Resign Process"
-    resigner.resign_build(result.args[0], result.args[1], result.args[2], result.args[3], result.args[4], result[:provisioning_profile], result[:cert_path], result[:cert_password])
+    resigner.resign_build(result.args[0], result.args[1], result.args[2], result.args[3], result.args[4], result[5], result[6], result[:cert_password])
 rescue Exception
 	puts "RESIGN FAILED: #{$!}"
 	return -1
