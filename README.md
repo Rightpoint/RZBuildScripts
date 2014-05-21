@@ -1,4 +1,4 @@
 RZBuildScripts
 ==============
 
-Command line build script for Raizlabs CI
+Command line build scripts for Raizlabs CI and project build configurations.
