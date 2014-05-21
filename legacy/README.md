@@ -1,0 +1,1 @@
+These scripts are used in Jenkins or other legacy setups.

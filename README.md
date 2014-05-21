@@ -1,4 +1,4 @@
-RZXcodeBuild
-============
+RZBuildScripts
+==============
 
-Xcode command line build script for building/signing/packaging iOS builds
+Command line build script for Raizlabs CI
