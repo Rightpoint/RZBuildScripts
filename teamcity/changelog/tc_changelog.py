@@ -109,7 +109,7 @@ for change in changes:
     
     comment = req.json().get('comment')
     comment = comment.strip()
-    change_log += "- {comment}\n".format(comment=comment)
+    change_log.join("- {comment}\n".format(comment=comment.encode("utf-8")))
     
 # Write to file
 with open(out_file, 'w') as f:
