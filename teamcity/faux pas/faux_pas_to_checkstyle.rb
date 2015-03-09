@@ -100,7 +100,7 @@ end.parse!
 json_path = ARGV[0]
 exit unless json_path
 
-json_string = IO.read(json_path)
+json_string = IO.read(json_path, encoding:"UTF-8")
 fail 'json string is empty!' if json_string.nil? || json_string.empty?
 
 xml_string = json_string_to_xml_string(json_string)
