@@ -81,6 +81,10 @@ def json_string_to_xml_string(json_string)
   ''.tap { |xml_string| xml_document_from_diagnostics(diagnostics_by_file).write(output: xml_string, indent: 4) }
 end
 
+# Set encoding to UTF-8 since that's what both ends deal with.
+Encoding.default_external = Encoding::UTF_8
+Encoding.default_internal = Encoding::UTF_8
+
 Options = Struct.new(:output_path)
 
 options = Options.new
