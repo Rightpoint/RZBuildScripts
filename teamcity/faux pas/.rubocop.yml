@@ -9,7 +9,9 @@ Metrics/MethodLength:
   CountComments: false  # count full line comments?
   Max: 100
 Metrics/CyclomaticComplexity:
-  Enabled: false	 
+  Enabled: false
+Metrics/PerceivedComplexity:
+  Enabled: false
 Style/TrailingWhitespace:
   Enabled: false
   

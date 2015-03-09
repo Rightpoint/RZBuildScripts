@@ -35,6 +35,17 @@ def xml_element_from_diagnostic(diagnostic)
   rule_name = diagnostic[:ruleName] ?  diagnostic[:ruleName].strip : ''
   file_snippet = diagnostic[:fileSnippet] ? diagnostic[:fileSnippet].strip : ''
   
+  faux_pas_severity = diagnostic[:severityDescription]
+  checkstyle_severity =
+  case faux_pas_severity
+  when 'Concern' then 'info'
+  when 'Warning' then 'warning'
+  when 'Error'  then 'error'
+  end
+  
+  attributes['severity'] = checkstyle_severity
+
+  
   message = "#{rule_name} (#{rule_description}): #{file_snippet}. #{info}".strip
   attributes['message'] = message
   
@@ -104,7 +115,7 @@ end.parse!
 json_path = ARGV[0]
 exit unless json_path
 
-json_string = IO.read(json_path, encoding:"UTF-8")
+json_string = IO.read(json_path, encoding: 'UTF-8')
 fail 'json string is empty!' if json_string.nil? || json_string.empty?
 
 xml_string = json_string_to_xml_string(json_string)
